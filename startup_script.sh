@@ -59,6 +59,7 @@ trap cleanup SIGINT
 watch_and_start_agents &
 PIDS+=($!)
 
+echo "Starting wheelchair modules..."
 ros2 run wheelchair_code_module wheelchair &
 PIDS+=($!)
 
@@ -68,9 +69,15 @@ PIDS+=($!)
 ros2 run wheelchair_code_module temp_monitor &
 PIDS+=($!)
 
+echo "Starting lidar driver..."
 ros2 launch livox_ros_driver2 rviz_MID360_launch.py &
 PIDS+=($!)
 
+echo "Starting SLAM module..."
+ros2 launch lidarslam lidarslam.launch.py &
+PIDS+=($!)
+
+echo "Starting Electron GUI..."
 (cd ~/Frontend/test-app && npm start) &
 PIDS+=($!)
 
