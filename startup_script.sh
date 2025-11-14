@@ -77,6 +77,13 @@ echo "Starting SLAM module..."
 ros2 launch lidarslam lidarslam.launch.py &
 PIDS+=($!)
 
+echo "Starting Nav2 module..."
+ros2 launch wheelchair_nav2 wheelchair_nav2_launch.py &
+PIDS+=($!)
+
+ros2 run pc2_occupancy pc2_to_occupancy &
+PIDS+=($!)
+
 echo "Starting Electron GUI..."
 (cd ~/Frontend/test-app && npm start) &
 PIDS+=($!)
