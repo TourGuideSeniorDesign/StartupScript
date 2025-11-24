@@ -73,16 +73,33 @@ echo "Starting lidar driver..."
 ros2 launch livox_ros_driver2 rviz_MID360_launch.py &
 PIDS+=($!)
 
-echo "Starting SLAM module..."
-ros2 launch lidarslam lidarslam.launch.py &
+echo "Starting pointcloud_to_laserscan..."
+ros2 run pointcloud_to_laserscan pointcloud_to_laserscan_node \
+  --ros-args \
+    -r input:=/livox/lidar \
+    -r output:=/scan \
+    -p min_height:=0.05 \
+    -p max_height:=1.90 \
+    -p angle_min:=-3.14 \
+    -p angle_max:=3.14 \
+    -p range_min:=0.2 \
+    -p range_max:=30.0 \
+    -p use_inf:=true \
+  &
+
+PIDS+=($!)
+
+echo "Starting SLAM Toolbox..."
+ros2 launch slam_toolbox online_async_launch.py \
+  slam_params_file:=/home/autogiro/ros2_ws/src/wheelchair_nav2/config/slam_toolbox.yaml \
+  use_sim_time:=false \
+  &
 PIDS+=($!)
 
 echo "Starting Nav2 module..."
 ros2 launch wheelchair_nav2 wheelchair_nav2_launch.py &
 PIDS+=($!)
 
-ros2 run pc2_occupancy pc2_to_occupancy &
-PIDS+=($!)
 
 echo "Starting Electron GUI..."
 (cd ~/Frontend/test-app && npm start) &
