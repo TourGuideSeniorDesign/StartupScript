@@ -1,7 +1,6 @@
 #!/bin/bash
 
-source  ~/.bashrc
-
+source ~/.bashrc
 source /opt/ros/humble/setup.bash
 source ~/ros2_ws/install/setup.bash
 source ~/ws_livox/install/setup.bash
@@ -69,17 +68,16 @@ PIDS+=($!)
 ros2 run wheelchair_code_module temp_monitor &
 PIDS+=($!)
 
-
-echo "Starting lidar driver..."
-ros2 launch livox_ros_driver2 rviz_MID360_launch.py &
-PIDS+=($!)
-
 echo "Publishing static transform from base_link to livox_frame..."
 sleep 1
 ros2 run tf2_ros static_transform_publisher \
   --x 0 --y 0 --z 0 --roll 3.14159 --pitch 0 --yaw 0 \
-  --frame-id base_link --child-frame-id livox_frame &
+  --frame-id base_link --child-frame-id livox_frame \
   --ros-args -p use_sim_time:=false &
+PIDS+=($!)
+
+echo "Starting lidar driver..."
+ros2 launch livox_ros_driver2 rviz_MID360_launch.py &
 PIDS+=($!)
 
 echo "Starting pointcloud_to_laserscan..."
@@ -87,7 +85,7 @@ ros2 run pointcloud_to_laserscan pointcloud_to_laserscan_node \
   --ros-args \
     -r cloud_in:=/livox/lidar \
     -r scan:=/scan \
-    -p target_frame:=base_link\
+    -p target_frame:=base_link \
     -p min_height:=-1.0 \
     -p max_height:=2.0 \
     -p angle_min:=-3.14 \
@@ -95,17 +93,13 @@ ros2 run pointcloud_to_laserscan pointcloud_to_laserscan_node \
     -p range_min:=0.2 \
     -p range_max:=120.0 \
     -p use_inf:=true \
-    -p use_sim_time:=false
+    -p use_sim_time:=false \
     -p transform_tolerance:=0.1 \
   &
-
 PIDS+=($!)
 
 echo "Starting SLAM Toolbox..."
-ros2 launch slam_toolbox online_async_launch.py \
-  slam_params_file:=/home/autogiro/ros2_ws/src/slam_config/slam_toolbox.yaml \
-  use_sim_time:=false \
-  &
+ros2 launch slam_toolbox online_async_launch.py &
 PIDS+=($!)
 
 echo "Starting Nav2 module..."
