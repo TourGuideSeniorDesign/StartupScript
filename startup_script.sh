@@ -69,6 +69,13 @@ PIDS+=($!)
 ros2 run wheelchair_code_module temp_monitor &
 PIDS+=($!)
 
+echo "Publishing static transform from base_link to livox_frame..."
+sleep 1
+ros2 run tf2_ros static_transform_publisher \
+  0 0 0 0 0 0 base_link livox_frame \
+  --ros-args -p use_sim_time:=false &
+PIDS+=($!)
+
 echo "Starting lidar driver..."
 ros2 launch livox_ros_driver2 rviz_MID360_launch.py &
 PIDS+=($!)
@@ -76,22 +83,25 @@ PIDS+=($!)
 echo "Starting pointcloud_to_laserscan..."
 ros2 run pointcloud_to_laserscan pointcloud_to_laserscan_node \
   --ros-args \
-    -r input:=/livox/lidar \
-    -r output:=/scan \
-    -p min_height:=0.05 \
-    -p max_height:=1.90 \
+    -r cloud_in:=/livox/lidar \
+    -r scan:=/scan \
+    -p target_frame:=livox_frame \
+    -p min_height:=-5.0 \
+    -p max_height:=0.5 \
     -p angle_min:=-3.14 \
     -p angle_max:=3.14 \
     -p range_min:=0.2 \
-    -p range_max:=30.0 \
+    -p range_max:=120.0 \
     -p use_inf:=true \
+    -p use_sim_time:=false
+    -p transform_tolerance:=0.1 \
   &
 
 PIDS+=($!)
 
 echo "Starting SLAM Toolbox..."
 ros2 launch slam_toolbox online_async_launch.py \
-  slam_params_file:=/home/autogiro/ros2_ws/src/wheelchair_nav2/config/slam_toolbox.yaml \
+  slam_params_file:=/home/autogiro/ros2_ws/src/slam_config/slam_toolbox.yaml \
   use_sim_time:=false \
   &
 PIDS+=($!)
