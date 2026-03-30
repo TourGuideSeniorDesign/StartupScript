@@ -68,6 +68,8 @@ PIDS+=($!)
 ros2 run wheelchair_code_module temp_monitor &
 PIDS+=($!)
 
+
+
 echo "Publishing static transform from base_link to livox_frame..."
 sleep 1
 ros2 run tf2_ros static_transform_publisher \
@@ -76,9 +78,17 @@ ros2 run tf2_ros static_transform_publisher \
   --ros-args -p use_sim_time:=false &
 PIDS+=($!)
 
+echo "Starting Motor Odometry node..."
+python3 ~/ros2_ws/src/ros_nodes/motorOdometry.py \
+  --ros-args -p use_sim_time:=false &
+PIDS+=($!)
+ros2 run tf2_tools view_frames
+
 echo "Starting lidar driver..."
 ros2 launch livox_ros_driver2 rviz_MID360_launch.py &
 PIDS+=($!)
+
+
 
 echo "Starting pointcloud_to_laserscan..."
 ros2 run pointcloud_to_laserscan pointcloud_to_laserscan_node \
@@ -98,6 +108,7 @@ ros2 run pointcloud_to_laserscan pointcloud_to_laserscan_node \
   &
 PIDS+=($!)
 
+sleep 3
 echo "Starting SLAM Toolbox..."
 ros2 launch slam_toolbox online_async_launch.py &
 PIDS+=($!)
