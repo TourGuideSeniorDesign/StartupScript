@@ -78,14 +78,15 @@ ros2 run tf2_ros static_transform_publisher \
   --ros-args -p use_sim_time:=false &
 PIDS+=($!)
 
+sleep 3
 echo "Starting Motor Odometry node..."
 python3 ~/ros2_ws/src/ros_nodes/motorOdometry.py \
   --ros-args -p use_sim_time:=false &
 PIDS+=($!)
-ros2 run tf2_tools view_frames
+
 
 echo "Starting lidar driver..."
-ros2 launch livox_ros_driver2 rviz_MID360_launch.py &
+ros2 launch livox_ros_driver2 rviz_MID360_launch.py  &
 PIDS+=($!)
 
 
@@ -95,7 +96,7 @@ ros2 run pointcloud_to_laserscan pointcloud_to_laserscan_node \
   --ros-args \
     -r cloud_in:=/livox/lidar \
     -r scan:=/scan \
-    -p target_frame:=base_link \
+    -p target_frame:=livox_frame \
     -p min_height:=-1.0 \
     -p max_height:=2.0 \
     -p angle_min:=-3.14 \
@@ -110,7 +111,8 @@ PIDS+=($!)
 
 sleep 3
 echo "Starting SLAM Toolbox..."
-ros2 launch slam_toolbox online_async_launch.py &
+ros2 launch slam_toolbox online_async_launch.py \
+  use_sim_time:=false &
 PIDS+=($!)
 
 echo "Starting Nav2 module..."
